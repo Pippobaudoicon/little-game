@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Test Your Reaction!</title>
+  <meta name="description" content="Five reaction tests for mouse, keyboard and touch, with global leaderboards. Remastered from a 2021 original.">
+  <meta name="theme-color" content="#0a0a0b">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='9' width='14' height='14' fill='%23ff4fd8'/%3E%3Ccircle cx='23' cy='16' r='7' fill='%23c8ff2e'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Doto:wght@700;900&family=Martian+Mono:wght@300;400;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-screen="menu">
+  <canvas id="fx" aria-hidden="true"></canvas>
+
+  <header class="bar">
+    <button class="logo" data-act="menu" aria-label="Home">
+      <i class="sq"></i><i class="ci"></i><b>REACTION</b><small>est. 2021</small>
+    </button>
+    <nav>
+      <button class="chip" data-act="board">Leaderboard <kbd>L</kbd></button>
+      <button class="chip" id="name-chip" data-act="rename" title="Change name (N)"></button>
+      <button class="chip icon" id="sound-btn" data-act="sound" aria-label="Sound (M)" aria-pressed="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="waves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <!-- MENU -->
+  <section id="menu" class="screen">
+    <div class="hero">
+      <p class="eyebrow"><span class="dot"></span> v2 · remastered 2026</p>
+      <h1 aria-label="Test your reaction!">
+        <span class="line">Test y<i class="o sq" aria-hidden="true"></i>ur</span>
+        <span class="line accent">Reacti<i class="o ci" aria-hidden="true"></i>n!</span>
+      </h1>
+      <p class="lede">Five tests for mouse, keyboard and touch. A global leaderboard. Built in 2021, rebuilt properly.</p>
+    </div>
+    <div class="modes" id="modes"></div>
+    <footer class="foot">
+      <a href="classic/original-2021.html">Play the 2021 original ↗</a>
+      <span>The clock starts on the frame that draws the signal and stops on your input's own timestamp. Your mouse, keyboard and screen add latency of their own.</span>
+    </footer>
+  </section>
+
+  <!-- PLAY -->
+  <section id="play" class="screen" data-phase="intro">
+    <div class="hud">
+      <span id="hud-mode"></span>
+      <ol id="pips"></ol>
+      <button class="chip" data-act="menu">Quit <kbd>Esc</kbd></button>
+    </div>
+    <div id="readout" aria-live="polite"></div>
+    <div id="stage"></div>
+    <div id="msg"><h2 id="msg-title"></h2><p id="msg-sub"></p></div>
+    <div id="dpad" aria-label="Arrow pad">
+      <button data-key="ArrowUp" aria-label="Up"><i></i></button>
+      <button data-key="ArrowLeft" aria-label="Left"><i></i></button>
+      <button data-key="ArrowDown" aria-label="Down"><i></i></button>
+      <button data-key="ArrowRight" aria-label="Right"><i></i></button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="screen">
+    <div class="res-grid">
+      <div class="rcard" id="rcard">
+        <div class="avatar"><i class="av"></i><span class="rank-badge" id="rc-rank">–</span></div>
+        <h3 id="rc-name"></h3>
+        <div class="pill" id="rc-pill"></div>
+        <div id="rc-status">
+          <div class="prog-row"><span id="rc-prog-label"></span><b id="rc-prog-val"></b></div>
+          <div class="prog"><i id="rc-prog-bar"></i></div>
+        </div>
+      </div>
+
+      <div class="res-main">
+        <p class="eyebrow" id="res-mode"></p>
+        <div class="res-head">
+          <div class="res-avg"><b id="res-avg"></b><span>ms avg</span></div>
+          <div class="res-tier" id="res-tier"><b></b><span></span></div>
+        </div>
+        <p class="pb-flag" id="res-pb">New personal best</p>
+        <dl class="stats" id="res-stats"></dl>
+        <div class="chart" id="res-chart"></div>
+        <div class="actions">
+          <button class="btn primary" data-act="retry">Retry <kbd>R</kbd></button>
+          <button class="btn" data-act="board">Leaderboard <kbd>L</kbd></button>
+          <button class="btn" data-act="copy">Copy result <kbd>C</kbd></button>
+          <button class="btn ghost" data-act="menu">Menu <kbd>Esc</kbd></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="board" class="screen">
+    <div class="lb-head">
+      <div>
+        <p class="eyebrow">Global · best average per player</p>
+        <h2>Leaderboard</h2>
+      </div>
+      <button class="btn ghost" data-act="back">Back <kbd>Esc</kbd></button>
+    </div>
+    <div class="lb-controls">
+      <div class="seg" id="lb-tabs" role="tablist"></div>
+      <span class="lb-meta" id="lb-meta"></span>
+    </div>
+    <div class="lb">
+      <div class="lb-cols"><span>#</span><span>Player</span><span></span><span>Avg ± sd</span><span>Best</span></div>
+      <div class="lb-rows" id="lb-rows"></div>
+      <div class="lb-axis" id="lb-axis"></div>
+      <div class="lb-pinned" id="lb-pinned"></div>
+    </div>
+    <p class="lb-foot">Bar = average reaction time across a run (shorter is faster). Whiskers = ± one standard deviation, so tighter means more consistent.</p>
+  </section>
+
+  <dialog id="name-dlg">
+    <form method="dialog">
+      <p class="eyebrow">Leaderboard</p>
+      <h3>What should we call you?</h3>
+      <input id="name-input" name="name" maxlength="16" autocomplete="nickname" placeholder="Your name" required>
+      <div class="actions">
+        <button class="btn primary" value="save">Save</button>
+        <button class="btn ghost" value="skip" formnovalidate>Not now</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status"></div>
+  <script src="game.js"></script>
+</body>
+</html>
