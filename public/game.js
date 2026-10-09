@@ -235,7 +235,7 @@ function falseStart(guess) {
   sfx.bad(); shake();
   stage.replaceChildren();
   setPhase('pause');
-  message('Too soon!', guess ? 'Under 100 ms is a guess, not a reaction.' : 'Wait for the signal.');
+  message('Too soon!', guess ? 'Under 50 ms is a guess, not a reaction.' : 'Wait for the signal.');
   after(1300, () => { message(''); next(); });
 }
 function next() {
@@ -326,7 +326,7 @@ const PRESS = {
     if (run.phase === 'wait') return falseStart();
     if (run.phase !== 'go') return;
     const rt = inp.t - run.shownAt;
-    if (rt < 100) return falseStart(true);
+    if (rt < 50) return falseStart(true);
     record(rt);
     burst(inp.x ?? innerWidth / 2, inp.y ?? innerHeight / 2, '#c8ff2e', 22, 1.4);
     setPhase('pause'); message('');
@@ -337,7 +337,7 @@ const PRESS = {
     run.clicks++;
     if (run.phase === 'go' && inp.target === run.stim.el) {
       const rt = inp.t - run.shownAt;
-      if (rt < 100) return falseStart(true);
+      if (rt < 50) return falseStart(true);
       const ms = record(rt);
       burst(inp.x, inp.y, run.stim.color);
       floatText(inp.x, inp.y, ms, run.stim.color);
@@ -359,7 +359,7 @@ const PRESS = {
       return;
     }
     const rt = inp.t - run.shownAt;
-    if (rt < 100) return falseStart(true);
+    if (rt < 50) return falseStart(true);
     record(rt);
     run.stim.el.classList.add('ok');
     burst(...centre(), '#c8ff2e', 22);
@@ -390,7 +390,7 @@ const PRESS = {
       return after(1200, () => { message(''); next(); });
     }
     const rt = inp.t - run.shownAt;
-    if (rt < 100) return falseStart(true);
+    if (rt < 50) return falseStart(true);
     record(rt);
     burst(inp.x ?? centre()[0], inp.y ?? centre()[1], '#c8ff2e', 22);
     after(500, next);

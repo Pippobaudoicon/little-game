@@ -61,7 +61,7 @@ async function submit(db, { mode, player, name, times }) {
   if (!Object.hasOwn(ROUNDS, mode)) return json({ error: 'unknown mode' }, 400);
   if (!isPlayer(player)) return json({ error: 'bad player' }, 400);
   if (!name) return json({ error: 'name required' }, 400);
-  if (!Array.isArray(times) || times.length !== ROUNDS[mode] || !times.every((t) => Number.isFinite(t) && t >= 80 && t <= 5000)) {
+  if (!Array.isArray(times) || times.length !== ROUNDS[mode] || !times.every((t) => Number.isFinite(t) && t >= 50 && t <= 5000)) {
     return json({ error: 'bad times' }, 400);
   }
   if (await taken(db, name, player)) return json({ error: 'name taken' }, 409);
