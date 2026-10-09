@@ -372,6 +372,7 @@ dialog input {
   font: 600 18px var(--mono);
 }
 dialog input:focus { outline: none; border-color: var(--amber); }
+#name-err { min-height: 1.5em; margin-top: 10px; font-size: 12px; color: var(--red); }
 dialog .actions { flex-direction: row-reverse; justify-content: flex-start; margin-top: 20px; } /* Save first in DOM so Enter saves */
 #toast {
   position: fixed; z-index: 60; left: 50%; bottom: 28px; translate: -50% 20px; opacity: 0; pointer-events: none;

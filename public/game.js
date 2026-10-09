@@ -40,7 +40,7 @@ if (!player) {
   store.set('player', player);
 }
 // everyone is on the board from their first run; the results card nudges anons to pick a real name
-const anonName = 'anon-' + player.slice(0, 4);
+const anonName = 'anon-' + player.slice(0, 8);
 let playerName = store.get('name', '') || anonName;
 const pbs = store.get('pb', {});
 let soundOn = store.get('sound', true);
@@ -496,6 +496,12 @@ async function submit(r) {
       method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ mode: r.mode, player, name: playerName, times: r.times }),
     });
+    // a name saved before names were unique can clash; fall back to anon so the run still counts
+    if (res.status === 409 && playerName !== anonName) {
+      toast(`“${playerName}” is taken, pick another name`);
+      setName(anonName);
+      return submit(r);
+    }
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     boards[r.mode] = data;
@@ -525,22 +531,33 @@ const dlg = $('#name-dlg');
 function askName() {
   if (dlg.open) return;
   $('#name-input').value = playerName;
+  $('#name-err').textContent = '';
   dlg.showModal();
 }
-dlg.addEventListener('close', () => {
+function setName(name) {
+  playerName = name; store.set('name', name === anonName ? '' : name); renderName();
+  if (last) { $('#rc-name').textContent = name; avatar($('#rcard .av'), name); }
+}
+// names are unique, so the server has to accept a rename before the dialog closes
+dlg.querySelector('form').addEventListener('submit', async (e) => {
+  if (e.submitter?.value !== 'save') return;
+  e.preventDefault();
   const v = $('#name-input').value.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 16);
-  const save = dlg.returnValue === 'save';
-  dlg.returnValue = '';
-  if (!save || !v || v === playerName) return;
-  playerName = v; store.set('name', v); renderName();
-  toast(`Playing as ${playerName}`);
-  if (last) { $('#rc-name').textContent = playerName; avatar($('#rcard .av'), playerName); }
-  // if this fails (offline), the next submit carries the new name anyway
-  fetch('/api/name', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ player, name: playerName }) })
-    .then(() => {
-      for (const k in boards) delete boards[k];
-      if (screen === 'board') loadBoard(boardMode);
-    }, () => {});
+  if (!v || v === playerName) return dlg.close();
+  const err = $('#name-err');
+  err.textContent = '';
+  try {
+    const res = await fetch('/api/name', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ player, name: v }) });
+    if (res.status === 409) return void (err.textContent = 'That name is taken');
+    if (!res.ok) throw new Error(res.status);
+  } catch {
+    return void (err.textContent = 'Couldn’t reach the leaderboard, try again');
+  }
+  setName(v);
+  dlg.close();
+  toast(`Playing as ${v}`);
+  for (const k in boards) delete boards[k];
+  if (screen === 'board') loadBoard(boardMode);
 });
 
 // ───────── leaderboard (after 21st.dev "Leaderboard Table": bars, ± whiskers, rows morph by rank) ─────────
