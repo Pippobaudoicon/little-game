@@ -39,7 +39,9 @@ if (!player) {
   player = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
   store.set('player', player);
 }
-let playerName = store.get('name', '');
+// everyone is on the board from their first run; the results card nudges anons to pick a real name
+const anonName = 'anon-' + player.slice(0, 4);
+let playerName = store.get('name', '') || anonName;
 const pbs = store.get('pb', {});
 let soundOn = store.get('sound', true);
 
@@ -149,7 +151,8 @@ function renderMenu() {
   }));
 }
 function renderName() {
-  $('#name-chip').textContent = playerName || 'Set name';
+  $('#name-chip').textContent = playerName;
+  $('#rc-claim').hidden = playerName !== anonName;
 }
 function renderSound() {
   $('#sound-btn').setAttribute('aria-pressed', soundOn);
@@ -429,9 +432,7 @@ function finish() {
   renderResults(last);
   show('results');
   if (isPb) { sfx.fanfare(); setTimeout(confetti, 250); }
-  if (playerName) submit(last);
-  else if (nameSkipped) setCard({ rank: '–', button: true });
-  else setTimeout(() => screen === 'results' && askName(), 700);
+  submit(last);
 }
 
 function renderResults(r) {
@@ -473,22 +474,16 @@ function renderResults(r) {
   chart.append(avgLine);
 
   // result card
-  $('#rc-name').textContent = playerName || 'Anonymous';
-  avatar($('#rcard .av'), playerName || 'anon');
+  $('#rc-name').textContent = playerName;
+  avatar($('#rcard .av'), playerName);
   $('#rc-pill').innerHTML = `${r.avg}<small>ms</small>`;
   setCard({ rank: '…', label: 'Ranking', value: 'checking the board', pct: 0 });
 }
 
 const MEDALS = ['#ffd25e', '#cfd6de', '#e3905d'];
-function setCard({ rank, label, value, pct, ring, button }) {
+function setCard({ rank, label, value, pct, ring }) {
   $('#rc-rank').textContent = rank;
   $('#rcard').style.setProperty('--ring', ring || 'var(--c)');
-  const status = $('#rc-status');
-  if (button) {
-    status.innerHTML = '<button class="btn" data-act="rename">Put me on the board</button>';
-    return;
-  }
-  if (!status.querySelector('.prog')) status.innerHTML = '<div class="prog-row"><span id="rc-prog-label"></span><b id="rc-prog-val"></b></div><div class="prog"><i id="rc-prog-bar"></i></div>';
   $('#rc-prog-label').textContent = label;
   $('#rc-prog-val').textContent = value;
   requestAnimationFrame(() => { $('#rc-prog-bar').style.width = pct + '%'; });
@@ -527,7 +522,6 @@ function copyResult() {
 
 // ───────── name ─────────
 const dlg = $('#name-dlg');
-let nameSkipped = false;
 function askName() {
   if (dlg.open) return;
   $('#name-input').value = playerName;
@@ -535,19 +529,13 @@ function askName() {
 }
 dlg.addEventListener('close', () => {
   const v = $('#name-input').value.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 16);
-  if (dlg.returnValue === 'save' && v) {
-    const first = !playerName;
-    playerName = v; store.set('name', v); renderName();
-    if (screen === 'results' && last) {
-      $('#rc-name').textContent = v; avatar($('#rcard .av'), v);
-      if (first || $('#rc-rank').textContent === '–') submit(last);
-    }
-    toast(`Playing as ${v}`);
-  } else if (!playerName) {
-    nameSkipped = true;
-    if (screen === 'results' && last) setCard({ rank: '–', button: true });
-  }
+  const save = dlg.returnValue === 'save';
   dlg.returnValue = '';
+  if (!save || !v || v === playerName) return;
+  playerName = v; store.set('name', v); renderName();
+  toast(`Playing as ${playerName}`);
+  // resubmitting is how the server learns the new name (it renames all of this player's rows)
+  if (last) { $('#rc-name').textContent = playerName; avatar($('#rcard .av'), playerName); submit(last); }
 });
 
 // ───────── leaderboard (after 21st.dev "Leaderboard Table": bars, ± whiskers, rows morph by rank) ─────────
