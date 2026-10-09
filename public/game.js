@@ -534,8 +534,13 @@ dlg.addEventListener('close', () => {
   if (!save || !v || v === playerName) return;
   playerName = v; store.set('name', v); renderName();
   toast(`Playing as ${playerName}`);
-  // resubmitting is how the server learns the new name (it renames all of this player's rows)
-  if (last) { $('#rc-name').textContent = playerName; avatar($('#rcard .av'), playerName); submit(last); }
+  if (last) { $('#rc-name').textContent = playerName; avatar($('#rcard .av'), playerName); }
+  // if this fails (offline), the next submit carries the new name anyway
+  fetch('/api/name', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ player, name: playerName }) })
+    .then(() => {
+      for (const k in boards) delete boards[k];
+      if (screen === 'board') loadBoard(boardMode);
+    }, () => {});
 });
 
 // ───────── leaderboard (after 21st.dev "Leaderboard Table": bars, ± whiskers, rows morph by rank) ─────────

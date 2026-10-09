@@ -3,10 +3,13 @@
 const ROUNDS = { flash: 5, classic: 10, arrows: 10, aim: 20, gonogo: 10 };
 
 const json = (data, status = 200) => Response.json(data, { status });
+const cleanName = (name) => String(name ?? '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 16);
+const isPlayer = (player) => typeof player === 'string' && /^[a-f0-9]{32}$/.test(player);
 
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
+    if (url.pathname === '/api/name' && req.method === 'POST') return rename(env.DB, (await req.json().catch(() => null)) ?? {});
     if (url.pathname !== '/api/scores') return new Response('Not found', { status: 404 });
     if (req.method === 'GET') {
       const mode = url.searchParams.get('mode');
@@ -40,10 +43,19 @@ async function board(db, mode, player) {
   };
 }
 
+// renames every board row this player holds, so a rename shows up without playing again
+async function rename(db, { player, name }) {
+  name = cleanName(name);
+  if (!isPlayer(player)) return json({ error: 'bad player' }, 400);
+  if (!name) return json({ error: 'name required' }, 400);
+  await db.prepare('UPDATE scores SET name = ? WHERE player = ?').bind(name, player).run();
+  return json({ name });
+}
+
 async function submit(db, { mode, player, name, times }) {
-  name = String(name ?? '').replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, 16);
+  name = cleanName(name);
   if (!Object.hasOwn(ROUNDS, mode)) return json({ error: 'unknown mode' }, 400);
-  if (typeof player !== 'string' || !/^[a-f0-9]{32}$/.test(player)) return json({ error: 'bad player' }, 400);
+  if (!isPlayer(player)) return json({ error: 'bad player' }, 400);
   if (!name) return json({ error: 'name required' }, 400);
   if (!Array.isArray(times) || times.length !== ROUNDS[mode] || !times.every((t) => Number.isFinite(t) && t >= 80 && t <= 5000)) {
     return json({ error: 'bad times' }, 400);
