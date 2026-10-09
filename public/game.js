@@ -399,7 +399,7 @@ const PRESS = {
 
 function press(inp) {
   if (!run) return;
-  if (run.phase === 'intro') { message(''); return next(); }
+  if (run.phase === 'intro') { message(''); countAttempt(run.mode); return next(); }
   if (run.phase === 'pause' || run.phase === 'done') return;
   PRESS[run.mode](inp);
 }
@@ -489,6 +489,13 @@ function setCard({ rank, label, value, pct, ring }) {
   requestAnimationFrame(() => { $('#rc-prog-bar').style.width = pct + '%'; });
 }
 
+// an attempt counts once the first round starts; fire and forget, the board just lags if it fails
+function countAttempt(mode) {
+  fetch('/api/attempt', {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mode, player }),
+  }).catch(() => {});
+}
+
 async function submit(r) {
   setCard({ rank: '…', label: 'Ranking', value: 'submitting', pct: 0 });
   try {
@@ -507,6 +514,8 @@ async function submit(r) {
     boards[r.mode] = data;
     if (r !== last) return;
     const { rank, total } = data.run;
+    const { tries, pbTry } = data.me;
+    $('#res-mode').textContent = `${r.M.name} · ${r.times.length} rounds · attempt ${tries}` + (pbTry && pbTry !== tries ? ` · PB on attempt ${pbTry}` : '');
     const pct = total > 1 ? Math.round(((total - rank) / (total - 1)) * 100) : 100;
     setCard({
       rank: '#' + rank, ring: MEDALS[rank - 1],
@@ -604,7 +613,7 @@ function renderTabs() {
 function boardRow(r, rank, axis, enter, delay) {
   const el = document.createElement('div');
   el.className = 'lb-row' + (r.you ? ' you' : '') + (enter ? ' enter' : '');
-  el.innerHTML = '<span class="lb-rank"></span><span class="lb-player"><i class="av"></i><b></b></span><span class="lb-barbox"><i class="lb-track"></i><i class="lb-bar"></i><span class="lb-wh"><i></i></span></span><span class="lb-score"><b></b><small></small></span><span class="lb-best"></span>';
+  el.innerHTML = '<span class="lb-rank"></span><span class="lb-player"><i class="av"></i><b></b></span><span class="lb-barbox"><i class="lb-track"></i><i class="lb-bar"></i><span class="lb-wh"><i></i></span></span><span class="lb-score"><b></b><small></small></span><span class="lb-best"></span><span class="lb-tries"><b></b><small></small></span>';
   fillRow(el, r, rank, axis);
   el.style.setProperty('--d', delay + 'ms');
   return el;
@@ -627,6 +636,10 @@ function fillRow(el, r, rank, axis) {
   el.querySelector('.lb-score b').textContent = r.score;
   el.querySelector('.lb-score small').textContent = 'ms ±' + r.sd;
   el.querySelector('.lb-best').textContent = r.best;
+  const tries = el.querySelector('.lb-tries');
+  tries.querySelector('b').textContent = r.pbTry ?? '–';
+  tries.querySelector('small').textContent = r.tries ? '/' + r.tries : '';
+  tries.title = r.tries ? `Best run on attempt ${r.pbTry ?? '?'} of ${r.tries}` : '';
 }
 
 function renderBoard(data) {

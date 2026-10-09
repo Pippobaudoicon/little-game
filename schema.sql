@@ -11,3 +11,12 @@ CREATE TABLE IF NOT EXISTS scores (
   PRIMARY KEY (mode, player)
 );
 CREATE INDEX IF NOT EXISTS scores_rank ON scores (mode, score, at);
+
+-- Every started run per player per mode, and which attempt set their best.
+CREATE TABLE IF NOT EXISTS attempts (
+  mode    TEXT    NOT NULL,
+  player  TEXT    NOT NULL,
+  n       INTEGER NOT NULL,  -- runs started
+  pb_try  INTEGER,           -- attempt number of the run held in scores
+  PRIMARY KEY (mode, player)
+);

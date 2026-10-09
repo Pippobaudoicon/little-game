@@ -13,6 +13,7 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.pathname === '/api/name' && req.method === 'POST') return rename(env.DB, (await req.json().catch(() => null)) ?? {});
+    if (url.pathname === '/api/attempt' && req.method === 'POST') return attempt(env.DB, (await req.json().catch(() => null)) ?? {});
     if (url.pathname !== '/api/scores') return new Response('Not found', { status: 404 });
     if (req.method === 'GET') {
       const mode = url.searchParams.get('mode');
@@ -26,21 +27,29 @@ export default {
 
 async function board(db, mode, player) {
   const { results } = await db
-    .prepare('SELECT player, name, score, sd, best FROM scores WHERE mode = ? ORDER BY score, at LIMIT 50')
+    .prepare(
+      `SELECT s.player, s.name, s.score, s.sd, s.best, a.n AS tries, a.pb_try AS pbTry
+       FROM scores s LEFT JOIN attempts a USING (mode, player) WHERE s.mode = ? ORDER BY s.score, s.at LIMIT 50`
+    )
     .bind(mode).all();
   const { n: total } = await db.prepare('SELECT COUNT(*) AS n FROM scores WHERE mode = ?').bind(mode).first();
   let me = null;
   if (player) {
-    const row = await db.prepare('SELECT name, score, sd, best, at FROM scores WHERE mode = ? AND player = ?').bind(mode, player).first();
+    const row = await db
+      .prepare(
+        `SELECT s.name, s.score, s.sd, s.best, s.at, a.n AS tries, a.pb_try AS pbTry
+         FROM scores s LEFT JOIN attempts a USING (mode, player) WHERE s.mode = ? AND s.player = ?`
+      )
+      .bind(mode, player).first();
     if (row) {
       const { n } = await db
         .prepare('SELECT COUNT(*) AS n FROM scores WHERE mode = ? AND (score < ? OR (score = ? AND at < ?))')
         .bind(mode, row.score, row.score, row.at).first();
-      me = { name: row.name, score: row.score, sd: row.sd, best: row.best, rank: n + 1 };
+      me = { name: row.name, score: row.score, sd: row.sd, best: row.best, tries: row.tries, pbTry: row.pbTry, rank: n + 1 };
     }
   }
   return {
-    top: results.map((r) => ({ name: r.name, score: r.score, sd: r.sd, best: r.best, you: r.player === player })),
+    top: results.map((r) => ({ name: r.name, score: r.score, sd: r.sd, best: r.best, tries: r.tries, pbTry: r.pbTry, you: r.player === player })),
     total,
     me,
   };
@@ -54,6 +63,16 @@ async function rename(db, { player, name }) {
   if (await taken(db, name, player)) return json({ error: 'name taken' }, 409);
   await db.prepare('UPDATE scores SET name = ? WHERE player = ?').bind(name, player).run();
   return json({ name });
+}
+
+// counted when a run's first round starts, so quitting halfway still counts
+async function attempt(db, { mode, player }) {
+  if (!Object.hasOwn(ROUNDS, mode)) return json({ error: 'unknown mode' }, 400);
+  if (!isPlayer(player)) return json({ error: 'bad player' }, 400);
+  const { n } = await db
+    .prepare('INSERT INTO attempts (mode, player, n) VALUES (?, ?, 1) ON CONFLICT DO UPDATE SET n = n + 1 RETURNING n')
+    .bind(mode, player).first();
+  return json({ n });
 }
 
 async function submit(db, { mode, player, name, times }) {
@@ -72,14 +91,22 @@ async function submit(db, { mode, player, name, times }) {
   const sd = Math.round(Math.sqrt(times.reduce((s, t) => s + (t - avg) ** 2, 0) / times.length));
   const best = Math.round(Math.min(...times));
 
+  const at = Date.now();
   await db.batch([
     db.prepare(
       `INSERT INTO scores (mode, player, name, score, sd, best, times, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (mode, player) DO UPDATE SET score = excluded.score, sd = excluded.sd, best = excluded.best,
          times = excluded.times, at = excluded.at
        WHERE excluded.score < scores.score`
-    ).bind(mode, player, name, score, sd, best, JSON.stringify(times.map(Math.round)), Date.now()),
+    ).bind(mode, player, name, score, sd, best, JSON.stringify(times.map(Math.round)), at),
     db.prepare('UPDATE scores SET name = ? WHERE player = ?').bind(name, player),
+    // a finished run always counts, even if its /api/attempt call never arrived
+    db.prepare('INSERT INTO attempts (mode, player, n) VALUES (?, ?, 1) ON CONFLICT DO NOTHING').bind(mode, player),
+    // this run became the best if the row now carries its timestamp
+    db.prepare(
+      `UPDATE attempts SET pb_try = n WHERE mode = ?1 AND player = ?2
+       AND EXISTS (SELECT 1 FROM scores WHERE mode = ?1 AND player = ?2 AND at = ?3)`
+    ).bind(mode, player, at),
   ]);
 
   const data = await board(db, mode, player);
