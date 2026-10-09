@@ -613,7 +613,7 @@ function renderTabs() {
 function boardRow(r, rank, axis, enter, delay) {
   const el = document.createElement('div');
   el.className = 'lb-row' + (r.you ? ' you' : '') + (enter ? ' enter' : '');
-  el.innerHTML = '<span class="lb-rank"></span><span class="lb-player"><i class="av"></i><b></b></span><span class="lb-barbox"><i class="lb-track"></i><i class="lb-bar"></i><span class="lb-wh"><i></i></span></span><span class="lb-score"><b></b><small></small></span><span class="lb-best"></span><span class="lb-tries"><b></b><small></small></span>';
+  el.innerHTML = '<span class="lb-rank"></span><span class="lb-player"><i class="av"></i><b></b></span><span class="lb-barbox"><i class="lb-track"></i><i class="lb-bar"></i><span class="lb-wh"><i></i></span></span><span class="lb-score"><b></b><small></small></span><span class="lb-best"></span>';
   fillRow(el, r, rank, axis);
   el.style.setProperty('--d', delay + 'ms');
   return el;
@@ -636,10 +636,6 @@ function fillRow(el, r, rank, axis) {
   el.querySelector('.lb-score b').textContent = r.score;
   el.querySelector('.lb-score small').textContent = 'ms ±' + r.sd;
   el.querySelector('.lb-best').textContent = r.best;
-  const tries = el.querySelector('.lb-tries');
-  tries.querySelector('b').textContent = r.pbTry ?? '–';
-  tries.querySelector('small').textContent = r.tries ? '/' + r.tries : '';
-  tries.title = r.tries ? `Best run on attempt ${r.pbTry ?? '?'} of ${r.tries}` : '';
 }
 
 function renderBoard(data) {

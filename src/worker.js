@@ -27,10 +27,7 @@ export default {
 
 async function board(db, mode, player) {
   const { results } = await db
-    .prepare(
-      `SELECT s.player, s.name, s.score, s.sd, s.best, a.n AS tries, a.pb_try AS pbTry
-       FROM scores s LEFT JOIN attempts a USING (mode, player) WHERE s.mode = ? ORDER BY s.score, s.at LIMIT 50`
-    )
+    .prepare('SELECT player, name, score, sd, best FROM scores WHERE mode = ? ORDER BY score, at LIMIT 50')
     .bind(mode).all();
   const { n: total } = await db.prepare('SELECT COUNT(*) AS n FROM scores WHERE mode = ?').bind(mode).first();
   let me = null;
@@ -49,7 +46,7 @@ async function board(db, mode, player) {
     }
   }
   return {
-    top: results.map((r) => ({ name: r.name, score: r.score, sd: r.sd, best: r.best, tries: r.tries, pbTry: r.pbTry, you: r.player === player })),
+    top: results.map((r) => ({ name: r.name, score: r.score, sd: r.sd, best: r.best, you: r.player === player })),
     total,
     me,
   };
