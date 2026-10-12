@@ -15,7 +15,7 @@ your time) as a polished browser game that honours the original instead of repla
 | # | Mode | Tests | Input | Rounds | Score |
 |---|------|-------|-------|--------|-------|
 | 1 | **Flash** | Simple reaction: screen turns from red to green after a random 1.5–5 s | click, any key, tap | 5 | avg ms |
-| 2 | **Classic '21** | The 2020 original: a random-colour square or circle at a random spot | click, tap | 10 | avg ms |
+| 2 | **Classic '20** | The 2020 original: a random-colour square or circle at a random spot | click, tap | 10 | avg ms |
 | 3 | **Arrows** | Choice reaction: press the arrow shown (wrong key +200 ms) | arrows / WASD, on-screen pad on touch | 10 | avg ms |
 | 4 | **Aim** | 20 targets back to back, no breaks | click, tap | 20 | avg ms per target |
 | 5 | **Go / No-Go** | Inhibition: green circle = hit, red square = hold (+300 ms if you don't) | click, any key, tap | 10 go trials | avg ms |

@@ -12,7 +12,7 @@ const MODES = {
   flash:   { key: '1', name: 'Flash',       rounds: 5,  color: '#c8ff2e', tiers: [200, 240, 290, 350], inputs: 'Mouse · Key · Touch',
              tag: 'Pure reaction. Wait for green, then hit anything.',
              intro: 'The screen turns <b>green</b> after a random wait. Click, tap or press any key as soon as it does.<br><em>Jump early and the round restarts.</em>' },
-  classic: { key: '2', name: "Classic '21", rounds: 10, color: '#ff4fd8', tiers: [330, 400, 480, 580], inputs: 'Mouse · Touch',
+  classic: { key: '2', name: "Classic '20", rounds: 10, color: '#ff4fd8', tiers: [330, 400, 480, 580], inputs: 'Mouse · Touch',
              tag: 'The 2020 original. Random shapes, random colours, random places.',
              intro: 'A <b>square or a circle</b> appears somewhere, in a random colour, just like 2020. Click it as fast as you can.' },
   arrows:  { key: '3', name: 'Arrows',      rounds: 10, color: '#ffb21e', tiers: [360, 430, 510, 620], inputs: 'Keyboard · Pad',
