@@ -2,12 +2,12 @@
 
 The original prompt, expanded into the brief this version was built from.
 
-> **Original:** "Make a much better version of my 2021 reaction game, with leaderboards,
+> **Original:** "Make a much better version of my 2020 reaction game, with leaderboards,
 > multiple reaction modes for mouse or keyboard, and beautiful UI, visual graphics and UX."
 
 ## The brief
 
-Rebuild *Test Your Reaction!* (2021: one random-coloured square or circle, click it, see
+Rebuild *Test Your Reaction!* (2020: one random-coloured square or circle, click it, see
 your time) as a polished browser game that honours the original instead of replacing it.
 
 ### 1. Five modes, every input
@@ -15,7 +15,7 @@ your time) as a polished browser game that honours the original instead of repla
 | # | Mode | Tests | Input | Rounds | Score |
 |---|------|-------|-------|--------|-------|
 | 1 | **Flash** | Simple reaction: screen turns from red to green after a random 1.5–5 s | click, any key, tap | 5 | avg ms |
-| 2 | **Classic '21** | The 2021 original: a random-colour square or circle at a random spot | click, tap | 10 | avg ms |
+| 2 | **Classic '21** | The 2020 original: a random-colour square or circle at a random spot | click, tap | 10 | avg ms |
 | 3 | **Arrows** | Choice reaction: press the arrow shown (wrong key +200 ms) | arrows / WASD, on-screen pad on touch | 10 | avg ms |
 | 4 | **Aim** | 20 targets back to back, no breaks | click, tap | 20 | avg ms per target |
 | 5 | **Go / No-Go** | Inhibition: green circle = hit, red square = hold (+300 ms if you don't) | click, any key, tap | 10 go trials | avg ms |
@@ -54,7 +54,7 @@ Rules shared by all modes:
   Dot-matrix numerals (*Doto*) for every time, tall condensed *Big Shoulders Display* for headlines,
   and *Martian Mono* for labels.
 - Signal colours: red means wait, lime means go, amber means you. Each mode has its own accent.
-- The hero reads **TEST YOUR REACTION!** like the 2021 `<h1>`. The two O's are the original square
+- The hero reads **TEST YOUR REACTION!** like the 2020 `<h1>`. The two O's are the original square
   and circle, changing to random colours as the original did.
 - Hits burst into small squares and circles. Hit sounds are synthesised, and their pitch rises
   as your reaction gets faster. No audio files.
@@ -65,7 +65,7 @@ Rules shared by all modes:
 `C` copies the result · `N` renames you · `M` mutes.
 
 ### 7. Respect the original
-The untouched 2021 file ships at `/classic/original-2021.html`, linked from the footer.
+The untouched 2020 file ships at `/classic/original-2020.html`, linked from the footer.
 
 ### 8. Stack
 - Plain HTML, CSS and JS with no framework and no build step.

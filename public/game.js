@@ -13,8 +13,8 @@ const MODES = {
              tag: 'Pure reaction. Wait for green, then hit anything.',
              intro: 'The screen turns <b>green</b> after a random wait. Click, tap or press any key as soon as it does.<br><em>Jump early and the round restarts.</em>' },
   classic: { key: '2', name: "Classic '21", rounds: 10, color: '#ff4fd8', tiers: [330, 400, 480, 580], inputs: 'Mouse · Touch',
-             tag: 'The 2021 original. Random shapes, random colours, random places.',
-             intro: 'A <b>square or a circle</b> appears somewhere, in a random colour, just like 2021. Click it as fast as you can.' },
+             tag: 'The 2020 original. Random shapes, random colours, random places.',
+             intro: 'A <b>square or a circle</b> appears somewhere, in a random colour, just like 2020. Click it as fast as you can.' },
   arrows:  { key: '3', name: 'Arrows',      rounds: 10, color: '#ffb21e', tiers: [360, 430, 510, 620], inputs: 'Keyboard · Pad',
              tag: 'Choice reaction. Press the arrow you see.',
              intro: 'An arrow appears. Press the <b>matching arrow key</b> (or WASD).<br><em>Wrong key: +200 ms. Pressing early restarts the round.</em>' },
@@ -45,7 +45,7 @@ let playerName = store.get('name', '') || anonName;
 const pbs = store.get('pb', {});
 let soundOn = store.get('sound', true);
 
-// name → stable colour + shape, a nod to the 2021 squares and circles
+// name → stable colour + shape, a nod to the 2020 squares and circles
 function look(name) {
   let h = 2166136261;
   for (const ch of name.toLowerCase()) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
@@ -157,7 +157,7 @@ function renderName() {
 function renderSound() {
   $('#sound-btn').setAttribute('aria-pressed', soundOn);
 }
-// the 2021 hero shapes keep changing colour, like the original randColor()
+// the 2020 hero shapes keep changing colour, like the original randColor()
 setInterval(() => {
   if (screen !== 'menu' || reduced.matches) return;
   for (const o of document.querySelectorAll('.hero .o')) o.style.background = `hsl(${Math.random() * 360} 90% 60%)`;

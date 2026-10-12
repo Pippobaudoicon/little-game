@@ -1,8 +1,8 @@
 # Test Your Reaction!
 
-A reaction game I made in 2021, rebuilt with five modes (mouse, keyboard and touch), a global
+A reaction game I made in 2020, rebuilt with five modes (mouse, keyboard and touch), a global
 leaderboard and a much better look. The brief it was built from is in [PROMPT.md](PROMPT.md).
-The original is still playable at [`/classic/original-2021.html`](public/classic/original-2021.html).
+The original is still playable at [`/classic/original-2020.html`](public/classic/original-2020.html).
 
 - `public/`: the game (plain HTML/CSS/JS, no build step)
 - `src/worker.js`: the `/api/scores` leaderboard API (Cloudflare Worker)
